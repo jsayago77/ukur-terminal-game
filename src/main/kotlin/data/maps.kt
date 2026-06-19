@@ -1,4 +1,4 @@
-//GAME MAPS
+package data//GAME MAPS
 
 val FLOODED_DUNGEON = """
 ############################################################
