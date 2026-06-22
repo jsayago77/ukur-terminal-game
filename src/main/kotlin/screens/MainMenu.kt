@@ -4,6 +4,7 @@ import com.googlecode.lanterna.TextColor
 import com.googlecode.lanterna.graphics.TextGraphics
 import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
+import models.CharacterGenerator
 
 class MainMenu: Screen {
 
@@ -62,8 +63,9 @@ class MainMenu: Screen {
             KeyType.Enter -> {
                 // Select character
                 val choosenClass = options[selectedOption]
+                val character = CharacterGenerator.create(choosenClass)
 
-
+                return Game(character, 1)
             }
             KeyType.Escape -> {
                 // Exit game
