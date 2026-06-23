@@ -1,3 +1,4 @@
+import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import screens.MainMenu
@@ -5,7 +6,9 @@ import screens.Screen
 
 fun main() {
     // Init Lanterna
-    val screen = TerminalScreen(DefaultTerminalFactory().createTerminal())
+    val terminalSize = TerminalSize(80, 35)
+    val factory = DefaultTerminalFactory().setInitialTerminalSize(terminalSize)
+    val screen = TerminalScreen(factory.createTerminal())
     screen.startScreen()
     val tg = screen.newTextGraphics()
 
