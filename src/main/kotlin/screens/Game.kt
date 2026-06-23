@@ -22,9 +22,12 @@ class Game(
     private val maps = mapOf( 1 to FLOODED_DUNGEON, 2 to ARMORY, 3 to UKUR_NEXUS)
     private var enemies = mutableListOf<Enemy>()
 
-    // Player position
+    // Player data
     private var playerX = 1
     private var playerY = 1
+    private var playerHP = character.hp
+
+    private var sally = mutableListOf<String>()
 
     init {
         loadDynamicsEntities()
@@ -106,12 +109,20 @@ class Game(
                 for(enemy in enemies) {
                     tg.setCharacter(enemy.x, enemy.y, TextCharacter.fromCharacter(enemy.charSymbol, TextColor.ANSI.RED_BRIGHT, TextColor.ANSI.DEFAULT)[0])
                 }
+
                 // Draw user UI
                 tg.foregroundColor = TextColor.ANSI.CYAN
-                tg.putString(0, map.size + 1, "--------------------------------------------------")
-                tg.putString(0, map.size + 2, "Class: ${character.name} | HP: ${character.hp}")
-                tg.putString(0, map.size + 3, "HP: 100/${character.hp} | ATK: ${character.damage}")
-                tg.putString(0, map.size + 4, "--------------------------------------------------")
+                tg.putString(0, map.size, "--------------------------------------------------")
+                tg.putString(0, map.size + 1, "Class: ${character.name} | HP: ${playerHP}/${character.hp}")
+                tg.putString(0, map.size + 2, "ATK: ${character.damage}")
+                tg.putString(0, map.size + 3, "--------------------------------------------------")
+
+                // Draw Sally helper information
+                if (sally.isNotEmpty()) {
+                    for(i in sally.indices) {
+                        tg.putString(0, map.size + 4 + i, sally[i])
+                    }
+                }
             }
         }
     }
@@ -129,9 +140,18 @@ class Game(
             else -> {}
         }
 
+        val enemy = enemies.find { it.x == nextX && it.y == nextY }
+        if(enemy != null) {
+            enemy.hp -= character.damage
+            sally.add("⚔\uFE0F Golpeas a ${enemy.name} por ${character.damage} de daño.")
+
+            if(enemy.hp <= 0) {
+                enemies.remove(enemy)
+            }
+        }
+
         if (nextY in map.indices && nextX in map[nextY].indices) {
             val celdaDestino = map[nextY][nextX]
-
             if (celdaDestino != '#') {
                 playerX = nextX
                 playerY = nextY
@@ -146,6 +166,19 @@ class Game(
             for(enemy in enemies) {
                 val diffX = playerX - enemy.x
                 val diffY = playerY - enemy.y
+
+                if(abs(diffX) <= 1 && abs(diffY) <= 1) {
+                    // Enemy attacks player
+                    playerHP -= enemy.damage
+                    sally.add("\uD83D\uDCA5 ¡El enemigo ${enemy.name} te atacó y te hizo ${enemy.damage} de daño!")
+
+                    if(playerHP <= 0) {
+                        // Player dies, return to main menu
+                        sally.add("\uD83D\uDEAB ¡Has muerto! Regresando al menú principal...")
+                        return
+                    }
+                    continue
+                }
 
                 var nextX = enemy.x
                 var nextY = enemy.y
