@@ -58,6 +58,14 @@ class Game(
         }
     }
 
+    fun updateHistory(message: String) {
+        sally.add(message)
+
+        while (sally.size > 5) {
+            sally.removeAt(0)
+        }
+    }
+
     override fun draw(tg: TextGraphics) {
         // Convert estatic map to mutable structure
         map = maps[level]!!.map { it.toCharArray() }
@@ -114,7 +122,7 @@ class Game(
                 tg.foregroundColor = TextColor.ANSI.CYAN
                 tg.putString(0, map.size, "--------------------------------------------------")
                 tg.putString(0, map.size + 1, "Class: ${character.name} | HP: ${playerHP}/${character.hp}")
-                tg.putString(0, map.size + 2, "ATK: ${character.damage}")
+                tg.putString(0, map.size + 2, "ATK: ${character.atk}")
                 tg.putString(0, map.size + 3, "--------------------------------------------------")
 
                 // Draw Sally helper information
@@ -142,8 +150,8 @@ class Game(
 
         val enemy = enemies.find { it.x == nextX && it.y == nextY }
         if(enemy != null) {
-            enemy.hp -= character.damage
-            sally.add("⚔\uFE0F Golpeas a ${enemy.name} por ${character.damage} de daño.")
+            enemy.hp -= character.atk
+            updateHistory("⚔\uFE0F Golpeas a ${enemy.name} por ${character.atk} de daño.")
 
             if(enemy.hp <= 0) {
                 enemies.remove(enemy)
@@ -174,7 +182,7 @@ class Game(
 
                     if(playerHP <= 0) {
                         // Player dies, return to main menu
-                        sally.add("\uD83D\uDEAB ¡Has muerto! Regresando al menú principal...")
+                        updateHistory("\uD83D\uDEAB ¡Has muerto! Regresando al menú principal...")
                         return
                     }
                     continue
