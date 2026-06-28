@@ -9,6 +9,7 @@ class Enemy (
     var x: Int,
     var y: Int
 ) {
+    var awake: Boolean = false
     fun getInformation() = "$name: $description"
 
     fun receiveDamage(damage: Double) {

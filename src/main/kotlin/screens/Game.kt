@@ -18,6 +18,7 @@ class Game(
     var level: Int
 ): Screen {
 
+    private var loose = false
     private var map = listOf<CharArray>()
     private val maps = mapOf( 1 to FLOODED_DUNGEON, 2 to ARMORY, 3 to UKUR_NEXUS)
     private var enemies = mutableListOf<Enemy>()
@@ -115,7 +116,17 @@ class Game(
 
                 // Draw enemies
                 for(enemy in enemies) {
-                    tg.setCharacter(enemy.x, enemy.y, TextCharacter.fromCharacter(enemy.charSymbol, TextColor.ANSI.RED_BRIGHT, TextColor.ANSI.DEFAULT)[0])
+                    if (enemy.charSymbol == 'G') {
+                        if (enemy.awake) {
+                            tg.foregroundColor = TextColor.ANSI.RED
+                            tg.setCharacter(enemy.x, enemy.y, 'G')
+                        } else {
+                            tg.foregroundColor = TextColor.ANSI.WHITE
+                            tg.setCharacter(enemy.x, enemy.y, '#')
+                        }
+                    } else {
+                        tg.setCharacter(enemy.x, enemy.y, TextCharacter.fromCharacter(enemy.charSymbol, TextColor.ANSI.RED_BRIGHT, TextColor.ANSI.DEFAULT)[0])
+                    }
                 }
 
                 // Draw user UI
@@ -136,6 +147,8 @@ class Game(
     }
 
     override fun manageInput(key: KeyStroke): Screen {
+        if(loose) return MainMenu()
+
         // Next step coords
         var nextX = playerX
         var nextY = playerY
@@ -159,8 +172,8 @@ class Game(
         }
 
         if (nextY in map.indices && nextX in map[nextY].indices) {
-            val celdaDestino = map[nextY][nextX]
-            if (celdaDestino != '#') {
+            val destinyCell = map[nextY][nextX]
+            if (destinyCell != '#' && enemy == null) {
                 playerX = nextX
                 playerY = nextY
             }
@@ -183,7 +196,16 @@ class Game(
                     if(playerHP <= 0) {
                         // Player dies, return to main menu
                         updateHistory("\uD83D\uDEAB ¡Has muerto! Regresando al menú principal...")
+                        loose = true
                         return
+                    }
+                    continue
+                }
+
+                if(enemy.charSymbol == 'G' && !enemy.awake) {
+                    if (abs(diffX) <= 3 && abs(diffY) <= 3) {
+                        enemy.awake = true
+                        updateHistory("👁️ ¡Una gárgola de piedra abre sus ojos amarillos y ruge!")
                     }
                     continue
                 }
