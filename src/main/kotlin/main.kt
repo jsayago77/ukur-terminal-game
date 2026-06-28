@@ -27,7 +27,7 @@ fun main() {
         // 2. INPUT: Read the key
         val key = screen.readInput()
 
-        if (key.keyType == KeyType.EOF && activeScreen is MainMenu) {
+        if (key.keyType == KeyType.EOF) {
             execute = false
             continue
         }

@@ -11,6 +11,8 @@ import data.UKUR_NEXUS
 import models.Character
 import models.Enemy
 import models.EnemyGenerator
+import models.Item
+import models.ItemsGenerator
 import kotlin.math.abs
 
 class Game(
@@ -22,6 +24,7 @@ class Game(
     private var map = listOf<CharArray>()
     private val maps = mapOf( 1 to FLOODED_DUNGEON, 2 to ARMORY, 3 to UKUR_NEXUS)
     private var enemies = mutableListOf<Enemy>()
+    private var items = mutableListOf<Item>()
 
     // Player data
     private var playerX = 1
@@ -45,6 +48,10 @@ class Game(
                         map[y][x] = ' '
                     }
 
+                    '*', 'K', '[', ']', '+' -> {
+                        items.add(ItemsGenerator.create(char, x, y))
+                        map[y][x] = ' '
+                    }
                     '@' -> {
                         playerX = x
                         playerY = y
@@ -77,6 +84,7 @@ class Game(
                 when (val char = map[y][x]) {
                     '#' -> {
                         tg.foregroundColor = TextColor.ANSI.WHITE
+                        tg.backgroundColor = TextColor.RGB(110, 110, 110)
                         tg.putString(x, y, "#")
                     }
                     '~' -> {
@@ -105,7 +113,7 @@ class Game(
                         tg.putString(x, y, "X")
                     }
                     else -> {
-                        tg.backgroundColor = TextColor.ANSI.DEFAULT
+                        tg.backgroundColor = TextColor.RGB(50, 50, 50)
                         tg.putString(x, y, " ")
                     }
                 }
@@ -169,6 +177,24 @@ class Game(
             if(enemy.hp <= 0) {
                 enemies.remove(enemy)
             }
+        }
+
+        val item = items.find { it.x == nextX && it.y == nextY }
+        if(item != null) {
+            when(item.name) {
+                "Energy Crystal" -> {
+                    character.atk += item.effect
+                    updateHistory("💎 Recoges un Cristal de Energía. ATK +${item.effect}.")
+                }
+                "Health Potion" -> {
+                    playerHP = minOf(playerHP + item.effect, character.hp)
+                    updateHistory("🧪 Recoges una Poción de Salud. HP +${item.effect}.")
+                }
+                "Iron Key" -> {
+                    updateHistory("🗝️ Recoges una Llave de Hierro. Puede abrir X.")
+                }
+            }
+            items.remove(item)
         }
 
         if (nextY in map.indices && nextX in map[nextY].indices) {
